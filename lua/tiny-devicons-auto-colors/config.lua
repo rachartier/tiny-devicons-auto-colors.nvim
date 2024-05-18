@@ -22,24 +22,14 @@ local default_config = {
 }
 
 function M.setup(opts)
-	if opts == nil then
-		return
-	end
+	if opts ~= nil then
+		if opts.colors ~= nil then
+			default_config.colors = opts.colors
+		end
 
-	if opts.colors ~= nil then
-		default_config.colors = opts.colors
-	end
-
-	if opts.bias ~= nil then
-		default_config.bias = opts.bias
-	end
-
-	if opts.use_cache ~= nil then
-		default_config.use_cache = opts.use_cache
-	end
-
-	if opts.colorspace ~= nil then
-		default_config.colorspace = opts.colorspace
+		if opts.bias ~= nil then
+			default_config.bias = opts.bias
+		end
 	end
 
 	local devicons = require("nvim-web-devicons").get_icons()
