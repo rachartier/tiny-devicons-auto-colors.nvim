@@ -70,6 +70,4 @@ function M.setup(opts)
 	require("nvim-web-devicons").set_icon(icons)
 end
 
-M.setup(default_config)
-
 return M
