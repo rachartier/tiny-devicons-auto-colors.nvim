@@ -51,6 +51,7 @@ require('tiny-devicons-auto-colors').setup({
         "#00ffe6"
     },
 })
+```
 
 ### Options
 
