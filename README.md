@@ -14,6 +14,7 @@ With Lazy.nvim:
         require('tiny-devicons-auto-colors').setup()
     end
 }
+```
 
 ##  Setup
 
