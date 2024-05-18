@@ -1,29 +1,6 @@
 local M = {}
 
-local function atan2(y, x)
-	local theta = math.atan(y / x)
-	if x < 0 then
-		theta = theta + math.pi
-	end
-	if theta < 0 then
-		theta = theta + 2 * math.pi
-	end
-	return theta
-end
-
---- Converts a hexadecimal color value to RGB.
---- The hexadecimal value should start with a '#' and be followed by 6 hexadecimal digits.
---- The returned RGB values are in the range [0, 255].
---- @param hex string: Hexadecimal value of the color.
---- @return table: RGB values of the color.
-function M.hex_to_rgb(hex)
-	hex = hex:gsub("#", "")
-	return {
-		tonumber(hex:sub(1, 2), 16),
-		tonumber(hex:sub(3, 4), 16),
-		tonumber(hex:sub(5, 6), 16),
-	}
-end
+local utils = require("tiny-devicons-auto-colors.color_utils")
 
 --- Converts RGB color values to XYZ.
 --- The RGB values should be in the range [0, 255] and they will be scaled down to the range [0, 1].
@@ -36,31 +13,17 @@ end
 --- @return number: Y component of the color.
 --- @return number: Z component of the color.
 function M.rgb_to_xyz(r, g, b)
-	r, g, b = r / 255, g / 255, b / 255
-
-	if r > 0.04045 then
-		r = ((r + 0.055) / 1.055) ^ 2.4
-	else
-		r = r / 12.92
-	end
-	if g > 0.04045 then
-		g = ((g + 0.055) / 1.055) ^ 2.4
-	else
-		g = g / 12.92
-	end
-	if b > 0.04045 then
-		b = ((b + 0.055) / 1.055) ^ 2.4
-	else
-		b = b / 12.92
+	local function pivot_rgb(n)
+		return n > 0.04045 and ((n + 0.055) / 1.055) ^ 2.4 or n / 12.92
 	end
 
-	r, g, b = r * 100, g * 100, b * 100
+	r, g, b = pivot_rgb(r / 255), pivot_rgb(g / 255), pivot_rgb(b / 255)
 
-	local x = r * 0.4124 + g * 0.3576 + b * 0.1805
-	local y = r * 0.2126 + g * 0.7152 + b * 0.0722
-	local z = r * 0.0193 + g * 0.1192 + b * 0.9505
+	local x = r * 0.4124564 + g * 0.3575761 + b * 0.1804375
+	local y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750
+	local z = r * 0.0193339 + g * 0.1191920 + b * 0.9503041
 
-	return x, y, z
+	return x * 100, y * 100, z * 100
 end
 
 --- Converts XYZ color values to LAB.
@@ -73,23 +36,14 @@ end
 --- @return number: A component of the color.
 --- @return number: B component of the color.
 function M.xyz_to_lab(x, y, z)
-	x, y, z = x / 95.047, y / 100.000, z / 108.883
+	local function pivot_XYZ(n)
+		return n > 0.008856 and n ^ (1 / 3) or (7.787 * n) + (16 / 116)
+	end
 
-	if x > 0.008856 then
-		x = x ^ (1 / 3)
-	else
-		x = (7.787 * x) + (16 / 116)
-	end
-	if y > 0.008856 then
-		y = y ^ (1 / 3)
-	else
-		y = (7.787 * y) + (16 / 116)
-	end
-	if z > 0.008856 then
-		z = z ^ (1 / 3)
-	else
-		z = (7.787 * z) + (16 / 116)
-	end
+	local refX, refY, refZ = 95.047, 100.000, 108.883
+	x, y, z = x / refX, y / refY, z / refZ
+
+	x, y, z = pivot_XYZ(x), pivot_XYZ(y), pivot_XYZ(z)
 
 	local l = (116 * y) - 16
 	local a = 500 * (x - y)
@@ -120,78 +74,67 @@ function M.color_distance(color1, color2, bias)
 end
 
 --- Computes the CIEDE2000 color difference between two colors.
---- @param lab1 table: LAB values of the first color.
---- @param lab2 table: LAB values of the second color.
+--- @param rgb1 table: RGB values of the first color.
+--- @param rgb2 table: RGB values of the second color.
 --- @return number: CIEDE2000 color difference between the two colors.
-function M.ciede2000(lab1, lab2)
-	local L1, a1, b1 = lab1[1], lab1[2], lab1[3]
-	local L2, a2, b2 = lab2[1], lab2[2], lab2[3]
+function M.ciede2000(rgb1, rgb2)
+	local l1, a1, b1 = M.rgb_to_lab(rgb1[1], rgb1[2], rgb1[3])
+	local l2, a2, b2 = M.rgb_to_lab(rgb2[1], rgb2[2], rgb2[3])
 
-	local C1 = math.sqrt(a1 * a1 + b1 * b1)
-	local C2 = math.sqrt(a2 * a2 + b2 * b2)
-	local C_avg = (C1 + C2) / 2
+	local kL, kC, kH = 1, 1, 1
 
-	local G = 0.5 * (1 - math.sqrt((C_avg ^ 7) / (C_avg ^ 7 + 25 ^ 7)))
-	local a1_prime = (1 + G) * a1
-	local a2_prime = (1 + G) * a2
+	local deltaL = l2 - l1
 
-	local C1_prime = math.sqrt(a1_prime * a1_prime + b1 * b1)
-	local C2_prime = math.sqrt(a2_prime * a2_prime + b2 * b2)
+	local c1 = math.sqrt(a1 * a1 + b1 * b1)
+	local c2 = math.sqrt(a2 * a2 + b2 * b2)
+	local cBar = (c1 + c2) / 2
 
-	local h1_prime = atan2(b1, a1_prime)
-	local h2_prime = atan2(b2, a2_prime)
-	if h1_prime < 0 then
-		h1_prime = h1_prime + 2 * math.pi
-	end
-	if h2_prime < 0 then
-		h2_prime = h2_prime + 2 * math.pi
-	end
+	local aPrime1 = a1 + (a1 / 2) * (1 - math.sqrt((cBar ^ 7) / (cBar ^ 7 + 25 ^ 7)))
+	local aPrime2 = a2 + (a2 / 2) * (1 - math.sqrt((cBar ^ 7) / (cBar ^ 7 + 25 ^ 7)))
 
-	local delta_L_prime = L2 - L1
-	local delta_C_prime = C2_prime - C1_prime
-	local delta_h_prime = h2_prime - h1_prime
-	if delta_h_prime > math.pi then
-		delta_h_prime = delta_h_prime - 2 * math.pi
-	elseif delta_h_prime < -math.pi then
-		delta_h_prime = delta_h_prime + 2 * math.pi
-	end
+	local cPrime1 = math.sqrt(aPrime1 * aPrime1 + b1 * b1)
+	local cPrime2 = math.sqrt(aPrime2 * aPrime2 + b2 * b2)
 
-	local delta_H_prime = 2 * math.sqrt(C1_prime * C2_prime) * math.sin(delta_h_prime / 2)
+	local hPrime1 = utils.atan2(b1, aPrime1)
+	local hPrime2 = utils.atan2(b2, aPrime2)
 
-	local L_prime_avg = (L1 + L2) / 2
-	local C_prime_avg = (C1_prime + C2_prime) / 2
-	local h_prime_avg = (h1_prime + h2_prime) / 2
-	if math.abs(h1_prime - h2_prime) > math.pi then
-		h_prime_avg = (h1_prime + h2_prime + 2 * math.pi) / 2
-	end
+	hPrime1 = hPrime1 < 0 and hPrime1 + 2 * math.pi or hPrime1
+	hPrime2 = hPrime2 < 0 and hPrime2 + 2 * math.pi or hPrime2
 
-	local T = 1
-		- 0.17 * math.cos(h_prime_avg - math.rad(30))
-		+ 0.24 * math.cos(2 * h_prime_avg)
-		+ 0.32 * math.cos(3 * h_prime_avg + math.rad(6))
-		- 0.20 * math.cos(4 * h_prime_avg - math.rad(63))
-	local delta_theta = math.rad(30) * math.exp(-((h_prime_avg - math.rad(275)) / math.rad(25)) ^ 2)
-	local R_C = 2 * math.sqrt((C_prime_avg ^ 7) / (C_prime_avg ^ 7 + 25 ^ 7))
-	local S_L = 1 + ((0.015 * (L_prime_avg - 50) ^ 2) / math.sqrt(20 + (L_prime_avg - 50) ^ 2))
-	local S_C = 1 + 0.045 * C_prime_avg
-	local S_H = 1 + 0.015 * C_prime_avg * T
-	local R_T = -math.sin(2 * delta_theta) * R_C
+	local deltaHPrime = math.abs(hPrime1 - hPrime2) <= math.pi and hPrime2 - hPrime1
+		or hPrime2 <= hPrime1 and hPrime2 - hPrime1 + 2 * math.pi
+		or hPrime2 - hPrime1 - 2 * math.pi
 
-	local delta_E = math.sqrt(
-		(delta_L_prime / S_L) ^ 2
-			+ (delta_C_prime / S_C) ^ 2
-			+ (delta_H_prime / S_H) ^ 2
-			+ R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H)
+	local deltaCPrime = cPrime2 - cPrime1
+	local deltaH = 2 * math.sqrt(cPrime1 * cPrime2) * math.sin(deltaHPrime / 2)
+
+	local lPrimeBar = (l1 + l2) / 2
+	local cPrimeBar = (cPrime1 + cPrime2) / 2
+
+	local hPrimeBar = math.abs(hPrime1 - hPrime2) > math.pi and (hPrime1 + hPrime2 + 2 * math.pi) / 2
+		or (hPrime1 + hPrime2) / 2
+
+	local t = 1
+		- 0.17 * math.cos(hPrimeBar - math.pi / 6)
+		+ 0.24 * math.cos(2 * hPrimeBar)
+		+ 0.32 * math.cos(3 * hPrimeBar + math.pi / 30)
+		- 0.20 * math.cos(4 * hPrimeBar - 63 * math.pi / 180)
+
+	local deltaTheta = 30 * math.pi / 180 * math.exp(-((hPrimeBar - 275 * math.pi / 180) / (25 * math.pi / 180)) ^ 2)
+	local rC = 2 * math.sqrt((cPrimeBar ^ 7) / (cPrimeBar ^ 7 + 25 ^ 7))
+	local sL = 1 + (0.015 * (lPrimeBar - 50) ^ 2) / math.sqrt(20 + (lPrimeBar - 50) ^ 2)
+	local sC = 1 + 0.045 * cPrimeBar
+	local sH = 1 + 0.015 * cPrimeBar * t
+	local rT = -math.sin(2 * deltaTheta) * rC
+
+	local deltaE = math.sqrt(
+		(deltaL / (kL * sL)) ^ 2
+			+ (deltaCPrime / (kC * sC)) ^ 2
+			+ (deltaH / (kH * sH)) ^ 2
+			+ rT * (deltaCPrime / (kC * sC)) * (deltaH / (kH * sH))
 	)
 
-	return delta_E
-end
-
---- Converts RGB color values to hexadecimal.
---- @param rgb table: RGB values of the color.
---- @return string: Hexadecimal value of the color.
-function M.rgb_to_hex(rgb)
-	return string.format("#%02x%02x%02x", rgb[3], rgb[2], rgb[1])
+	return deltaE
 end
 
 --- Computes the nearest color from the default colors.
@@ -202,14 +145,14 @@ end
 function M.get_nearest_color(color, colors_table, bias)
 	local nearest_color = colors_table.white
 	local nearest_distance = math.huge
-	local rgb_color = M.hex_to_rgb(color)
+	local rgb_color = utils.hex_to_rgb(color)
 
 	if bias == nil then
 		bias = { 1, 1, 1 }
 	end
 
 	for _, value in pairs(colors_table) do
-		local rgb_value = M.hex_to_rgb(value)
+		local rgb_value = utils.hex_to_rgb(value)
 
 		local distance = M.ciede2000(rgb_color, rgb_value)
 
