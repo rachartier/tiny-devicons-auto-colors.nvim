@@ -1,5 +1,16 @@
 local M = {}
 
+local function atan2(y, x)
+	local theta = math.atan(y / x)
+	if x < 0 then
+		theta = theta + math.pi
+	end
+	if theta < 0 then
+		theta = theta + 2 * math.pi
+	end
+	return theta
+end
+
 --- Converts a hexadecimal color value to RGB.
 --- The hexadecimal value should start with a '#' and be followed by 6 hexadecimal digits.
 --- The returned RGB values are in the range [0, 255].
@@ -127,8 +138,8 @@ function M.ciede2000(lab1, lab2)
 	local C1_prime = math.sqrt(a1_prime * a1_prime + b1 * b1)
 	local C2_prime = math.sqrt(a2_prime * a2_prime + b2 * b2)
 
-	local h1_prime = math.atan2(b1, a1_prime)
-	local h2_prime = math.atan2(b2, a2_prime)
+	local h1_prime = atan2(b1, a1_prime)
+	local h2_prime = atan2(b2, a2_prime)
 	if h1_prime < 0 then
 		h1_prime = h1_prime + 2 * math.pi
 	end
