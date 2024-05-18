@@ -65,7 +65,7 @@ require('tiny-devicons-auto-colors').setup({
 
 ### Options
 
-- `colors`: A table of color codes (ex: {color1 = "#ff00ff"}) that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
+- `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
 
 - `bias`: A table of three numbers that represent the bias for the Lab color space. This affects how the "nearest color" is calculated. The default is `{1, 1, 1}`. Should be used carefully...
 
