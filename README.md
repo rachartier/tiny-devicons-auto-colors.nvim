@@ -39,8 +39,7 @@ Here is an example with catppuccin theme:
 local theme_colors = require("catppuccin.palettes").get_palette("macchiato")
 
 require('tiny-devicons-auto-colors').setup({
-        colors = theme_colors,
-    })
+    colors = theme_colors,
 })
 ```
 
@@ -71,3 +70,7 @@ require('tiny-devicons-auto-colors').setup({
 - `bias`: A table of three numbers that represent the bias for the Lab color space. This affects how the "nearest color" is calculated. The default is `{1, 1, 1}`. Should be used carefully...
 
 After calling `setup`, the plugin will automatically assign colors to all devicons. You do not need to do anything
+
+### Thanks
+
+![devicon-colorscheme.nvim](https://github.com/dgox16/devicon-colorscheme.nvim) for the idea!
