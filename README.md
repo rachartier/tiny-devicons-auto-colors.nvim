@@ -1,6 +1,8 @@
 # tiny-devicons-auto-colors.nvim
 
-This is a Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette.
+A Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette.
+
+## Images
 
 #### Without plugin:
 
