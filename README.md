@@ -20,6 +20,9 @@ With Lazy.nvim:
 ```lua
 {
     "rachartier/tiny-devicons-auto-colors.nvim",
+    dependencies = {
+        "nvim-tree/nvim-web-devicons"
+    },
     event = "VeryLazy",
     config = function()
         require('tiny-devicons-auto-colors').setup()
@@ -63,9 +66,11 @@ require('tiny-devicons-auto-colors').setup({
 })
 ```
 
+The order of colors does not matter. You can also add as many colors as you want, as more colors results in better color matching.
+
 ### Options
 
-- `colors`: A table of color codes (ex: {color1 = "#ff00ff"}) that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
+- `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
 
 - `bias`: A table of three numbers that represent the bias for the Lab color space. This affects how the "nearest color" is calculated. The default is `{1, 1, 1}`. Should be used carefully...
 
