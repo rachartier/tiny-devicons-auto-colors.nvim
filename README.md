@@ -78,6 +78,48 @@ After calling `setup`, the plugin will automatically assign colors to all devico
 
 A function `require("tiny-devicons-auto-colors").apply(colors_table)` is also available to apply the colors. It can be useful if you want to apply the new colors when you change the colorscheme.
 
+### Misc
+
+You can do autoreload on your side if you switch theme with `colorscheme` command.
+
+#### Example
+
+```lua
+local function number_to_hex(number)
+    number = math.max(0, math.min(16777215, number))
+    local hex = string.format("%06X", number)
+    return "#" .. hex
+end
+
+local function get_hl(name)
+    local hl = vim.api.nvim_get_hl(0, {
+        name = name,
+    })
+
+    return number_to_hex(hl.fg)
+end
+
+vim.api.nvim_create_autocmd("Colorscheme", {
+    group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
+    callback = function()
+        local colors = {
+            get_hl("WarningMsg"),
+            get_hl("ErrorMsg"),
+            get_hl("MoreMsg"),
+            get_hl("Comment"),
+            get_hl("Type"),
+            get_hl("Identifier"),
+            get_hl("Constant"),
+            -- add more...
+        }
+
+
+        require("tiny-devicons-auto-colors").apply(colors)
+    end,
+})
+
+```
+
 ### Thanks
 
 ![devicon-colorscheme.nvim](https://github.com/dgox16/devicon-colorscheme.nvim) for the idea!
