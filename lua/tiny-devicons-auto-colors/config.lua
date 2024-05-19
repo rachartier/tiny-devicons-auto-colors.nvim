@@ -32,6 +32,10 @@ function M.setup(opts)
 		end
 	end
 
+	M.apply(default_config.colors)
+end
+
+function M.apply(colors)
 	local devicons = require("nvim-web-devicons").get_icons()
 	local colorspace = require("tiny-devicons-auto-colors.lab_utils")
 
@@ -45,8 +49,7 @@ function M.setup(opts)
 			if cache[icon_object.color] then
 				nearest_color = cache[icon_object.color]
 			else
-				nearest_color =
-					colorspace.get_nearest_color(icon_object.color, default_config.colors, default_config.bias)
+				nearest_color = colorspace.get_nearest_color(icon_object.color, colors, default_config.bias)
 				cache[icon_object.color] = nearest_color
 			end
 

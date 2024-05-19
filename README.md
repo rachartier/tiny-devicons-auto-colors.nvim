@@ -1,6 +1,6 @@
 # tiny-devicons-auto-colors.nvim
 
-This is a Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette. 
+This is a Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette.
 
 #### Without plugin:
 
@@ -70,6 +70,8 @@ require('tiny-devicons-auto-colors').setup({
 - `bias`: A table of three numbers that represent the bias for the Lab color space. This affects how the "nearest color" is calculated. The default is `{1, 1, 1}`. Should be used carefully...
 
 After calling `setup`, the plugin will automatically assign colors to all devicons. You do not need to do anything
+
+A function `require("tiny-devicons-auto-colors").apply(colors_table)` is also available to apply the colors. It can be useful if you want to apply the new colors when you change the colorscheme.
 
 ### Thanks
 
