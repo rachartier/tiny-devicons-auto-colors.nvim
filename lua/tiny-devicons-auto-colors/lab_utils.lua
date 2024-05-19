@@ -143,7 +143,7 @@ end
 --- @param bias table: Bias for each color component. Can be nil.
 --- @return string: Hexadecimal value of the nearest color.
 function M.get_nearest_color(color, colors_table, bias)
-	local nearest_color = colors_table.white
+	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
 	local rgb_color = utils.hex_to_rgb(color)
 
@@ -152,13 +152,19 @@ function M.get_nearest_color(color, colors_table, bias)
 	end
 
 	for _, value in pairs(colors_table) do
-		local rgb_value = utils.hex_to_rgb(value)
+		if type(value) == "string" then
+			value = value:lower()
 
-		local distance = M.ciede2000(rgb_color, rgb_value)
+			if value ~= "none" and value ~= "null" then
+				local rgb_value = utils.hex_to_rgb(value)
 
-		if distance < nearest_distance then
-			nearest_color = value
-			nearest_distance = distance
+				local distance = M.ciede2000(rgb_color, rgb_value)
+
+				if distance < nearest_distance then
+					nearest_color = value
+					nearest_distance = distance
+				end
+			end
 		end
 	end
 
