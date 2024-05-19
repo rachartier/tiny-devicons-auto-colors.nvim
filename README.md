@@ -66,6 +66,8 @@ require('tiny-devicons-auto-colors').setup({
 })
 ```
 
+The order of colors does not matter. You can also add as many colors as you want, as more colors results in better color matching.
+
 ### Options
 
 - `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
