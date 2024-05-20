@@ -21,7 +21,7 @@ jobs:
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: tiny-devicons-auto-colors.nvim
-          version: "Neovim >= 0.10.0"
+          version: "Neovim >= 0.7.0"
           demojify: true
           treesitter: true
       - name: Push changes
