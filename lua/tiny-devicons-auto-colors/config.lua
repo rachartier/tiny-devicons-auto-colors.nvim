@@ -17,7 +17,7 @@ local default_config = {
 		"#1e1e1e",
 	},
 	factors = {
-		lightness = 1.45,
+		lightness = 1.75,
 		chroma = 1,
 		hue = 1.25,
 	},
