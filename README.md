@@ -93,39 +93,53 @@ After calling `setup`, the plugin will automatically assign colors to all devico
 You can do auto-reload on your side if you switch theme with `colorscheme` command:
 
 ```lua
-local function number_to_hex(number)
-    number = math.max(0, math.min(16777215, number))
-    local hex = string.format("%06X", number)
-    return "#" .. hex
-end
+{
+    "rachartier/tiny-devicons-auto-colors.nvim",
+    dependencies = {
+        "nvim-tree/nvim-web-devicons"
+    },
+    event = "VeryLazy",
+    config = function()
+        -- you may need to redefine colors depending on your colorscheme (catppuccin, tokyonight...)
+        -- require('tiny-devicons-auto-colors').setup({
+        --     colors = ...
+        -- }) 
+        require('tiny-devicons-auto-colors').setup() 
 
-local function get_hl(name)
-    local hl = vim.api.nvim_get_hl(0, {
-        name = name,
-    })
-
-    return number_to_hex(hl.fg)
-end
-
-vim.api.nvim_create_autocmd("Colorscheme", {
-    group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
-    callback = function()
-        local colors = {
-            get_hl("WarningMsg"),
-            get_hl("ErrorMsg"),
-            get_hl("MoreMsg"),
-            get_hl("Comment"),
-            get_hl("Type"),
-            get_hl("Identifier"),
-            get_hl("Constant"),
-            -- add more...
-        }
-
-
-        require("tiny-devicons-auto-colors").apply(colors)
-    end,
-})
-
+        local function number_to_hex(number)
+            number = math.max(0, math.min(16777215, number))
+            local hex = string.format("%06X", number)
+            return "#" .. hex
+        end
+        
+        local function get_hl(name)
+            local hl = vim.api.nvim_get_hl(0, {
+                name = name,
+            })
+        
+            return number_to_hex(hl.fg)
+        end
+        
+        vim.api.nvim_create_autocmd("Colorscheme", {
+            group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
+            callback = function()
+                local colors = {
+                    get_hl("WarningMsg"),
+                    get_hl("ErrorMsg"),
+                    get_hl("MoreMsg"),
+                    get_hl("Comment"),
+                    get_hl("Type"),
+                    get_hl("Identifier"),
+                    get_hl("Constant"),
+                    -- add more...
+                }
+        
+        
+                require("tiny-devicons-auto-colors").apply(colors)
+            end,
+        })
+    end
+}
 ```
 
 ## FAQ
