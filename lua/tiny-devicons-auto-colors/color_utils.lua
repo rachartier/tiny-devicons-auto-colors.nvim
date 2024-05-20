@@ -2,8 +2,12 @@ local M = {}
 
 --- Converts a number to a hexadecimal color value (string).
 --- @param number number: Number to convert.
---- @return string: Hexadecimal color value.
+--- @return string|nil: Hexadecimal color value.
 function M.number_to_hex(number)
+	if number == nil then
+		return nil
+	end
+
 	number = math.max(0, math.min(16777215, number))
 	local hex = string.format("%06X", number)
 	return "#" .. hex

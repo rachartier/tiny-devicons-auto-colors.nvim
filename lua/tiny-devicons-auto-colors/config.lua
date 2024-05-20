@@ -1,53 +1,5 @@
 local M = {}
 
-local color_utils = require("tiny-devicons-auto-colors.color_utils")
-
-local function get_hl(name, bg)
-	local hl = vim.api.nvim_get_hl(0, {
-		name = name,
-	})
-
-	if hl == nil or hl.fg == nil then
-		return nil
-	end
-
-	if bg and hl.bg ~= nil then
-		return color_utils.number_to_hex(hl.bg)
-	end
-
-	return color_utils.number_to_hex(hl.fg)
-end
-
-local function get_hl_colors()
-	return {
-		get_hl("WarningMsg"),
-		get_hl("DiffAdd"),
-		get_hl("DiagnosticSignOk"),
-		get_hl("DiagnosticSignWarn"),
-		get_hl("DiagnosticSignError"),
-		get_hl("DiagnosticSignHint"),
-		get_hl("DiffAdd", true),
-		get_hl("DiffChange", true),
-		get_hl("DiffDelete", true),
-		get_hl("Function"),
-		get_hl("Identifier"),
-		get_hl("LineNr"),
-		get_hl("Include"),
-		get_hl("Label"),
-		get_hl("WinBar"),
-		get_hl("Pmenu"),
-		get_hl("ErrorMsg"),
-		get_hl("MoreMsg"),
-		get_hl("Comment"),
-		get_hl("Type"),
-		get_hl("Identifier"),
-		get_hl("Constant"),
-		get_hl("ModeMsg"),
-		get_hl("Normal"),
-		get_hl("TabLineSel"),
-	}
-end
-
 local default_config = {
 	colors = {},
 	factors = {
@@ -63,12 +15,14 @@ local default_config = {
 }
 
 function M.setup(opts)
+	local custom_hl = require("tiny-devicons-auto-colors.custom_hl")
+
 	if opts == nil then
 		opts = {}
 	end
 
 	if opts.colors == nil then
-		default_config.colors = get_hl_colors()
+		default_config.colors = custom_hl.get_custom_colors()
 	end
 
 	default_config = vim.tbl_deep_extend("force", default_config, opts)
@@ -79,7 +33,7 @@ function M.setup(opts)
 			callback = function()
 				local colors = {}
 
-				colors = get_hl_colors()
+				colors = custom_hl.get_custom_colors()
 
 				M.apply(colors)
 			end,
