@@ -21,6 +21,10 @@ local default_config = {
 		chroma = 1,
 		hue = 1.25,
 	},
+	cache = {
+		enabled = true,
+		path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors.cache",
+	},
 }
 
 function M.setup(opts)
@@ -36,19 +40,36 @@ end
 function M.apply(colors)
 	local devicons = require("nvim-web-devicons").get_icons()
 	local colorspace = require("tiny-devicons-auto-colors.lab_utils")
+	local hash = require("tiny-devicons-auto-colors.hash")
+	local cache_utils = require("tiny-devicons-auto-colors.cache")
+	local hash_colors = hash.hash_table(colors)
 
-	local cache = {}
 	local icons = {}
+	local cache = nil
+	local use_cache = false
+
+	if default_config.cache.enabled then
+		cache = cache_utils.read_cache(default_config.cache.path)
+	end
+
+	if cache and cache.hash_colors == hash_colors then
+		use_cache = true
+	else
+		cache = {
+			hash_colors = hash_colors,
+			colors = {},
+		}
+	end
 
 	for key_icon, icon_object in pairs(devicons) do
 		local nearest_color = nil
 		local default_icon_color = icon_object.color
 
-		if cache[default_icon_color] then
-			nearest_color = cache[default_icon_color]
+		if use_cache or cache.colors[default_icon_color] then
+			nearest_color = cache.colors[default_icon_color]
 		else
 			nearest_color = colorspace.get_nearest_color(default_icon_color, colors, default_config.factors)
-			cache[default_icon_color] = nearest_color
+			cache.colors[default_icon_color] = nearest_color
 		end
 
 		icons[key_icon] = {
@@ -57,6 +78,11 @@ function M.apply(colors)
 			color = nearest_color,
 			cterm_color = icon_object.cterm_color,
 		}
+	end
+
+	if default_config.cache.enabled and not use_cache then
+		cache.hash_colors = hash_colors
+		cache_utils.write_cache(default_config.cache.path, cache)
 	end
 
 	require("nvim-web-devicons").set_icon(icons)

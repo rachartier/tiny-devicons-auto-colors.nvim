@@ -68,6 +68,9 @@ The order of colors does not matter. You can also add as many colors as you want
 
 - `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
 - `factors`: A table of factors: `lightness`, `chroma` and `hue`. You can adjust them to get better results. The default values are `1.75`, `1` and `1.25` respectively.
+- `cache` greatly improve the performance of the plugin.
+	- `enabled`: Enable or disable caching. Default is `true`.
+    - `path`: The path where the cache will be stored. Default is `vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json"`.
 
 Example:
 
@@ -78,6 +81,10 @@ require('tiny-devicons-auto-colors').setup({
         lightness = 1.45,
         chroma = 1,
         hue = 1.25,
+    },
+    cache = {
+        enabled = true,
+        path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
     },
 })
 ```
