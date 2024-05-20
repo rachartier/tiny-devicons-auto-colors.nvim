@@ -72,15 +72,13 @@ The order of colors does not matter. You can also add as many colors as you want
 
 - `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
 
-- `bias`: A table of three numbers that represent the bias for the Lab color space. This affects how the "nearest color" is calculated. The default is `{1, 1, 1}`. Should be used carefully...
-
 After calling `setup`, the plugin will automatically assign colors to all devicons. You do not need to do anything
 
 A function `require("tiny-devicons-auto-colors").apply(colors_table)` is also available to apply the colors. It can be useful if you want to apply the new colors when you change the colorscheme.
 
 ### Misc
 
-You can do autoreload on your side if you switch theme with `colorscheme` command.
+You can do auto-reload on your side if you switch theme with `colorscheme` command.
 
 #### Example
 

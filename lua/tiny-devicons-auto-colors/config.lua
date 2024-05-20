@@ -14,23 +14,10 @@ local default_config = {
 		"#00a1ff",
 		"#00ffe6",
 	},
-	bias = {
-		1,
-		1,
-		1,
-	},
 }
 
 function M.setup(opts)
-	if opts ~= nil then
-		if opts.colors ~= nil then
-			default_config.colors = opts.colors
-		end
-
-		if opts.bias ~= nil then
-			default_config.bias = opts.bias
-		end
-	end
+	default_config = vim.tbl_deep_extend("force", default_config, opts)
 
 	M.apply(default_config.colors)
 end
@@ -44,13 +31,14 @@ function M.apply(colors)
 
 	for key_icon, icon_object in pairs(devicons) do
 		local nearest_color = nil
+		local default_icon_color = icon_object.color
 
-		if icon_object.color ~= nil then
-			if cache[icon_object.color] then
-				nearest_color = cache[icon_object.color]
+		if default_config ~= nil then
+			if cache[default_icon_color] then
+				nearest_color = cache[default_icon_color]
 			else
-				nearest_color = colorspace.get_nearest_color(icon_object.color, colors, default_config.bias)
-				cache[icon_object.color] = nearest_color
+				nearest_color = colorspace.get_nearest_color(default_icon_color, colors)
+				cache[default_icon_color] = nearest_color
 			end
 
 			icons[key_icon] = {
