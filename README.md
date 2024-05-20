@@ -1,16 +1,12 @@
 # tiny-devicons-auto-colors.nvim
 
-This is a Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette.
+A Neovim plugin that automatically assigns colors to devicons based on their nearest color in a predefined color palette.
 
-#### Without plugin:
+## Images
 
-![image](https://github.com/rachartier/tiny-devicons-auto-colors.nvim/assets/2057541/0130c1d8-12c7-495e-a22a-cb1d8aae7eb1)
-
-
-#### With plugin (catppuccin macchiato theme):
-
-![image](https://github.com/rachartier/tiny-devicons-auto-colors.nvim/assets/2057541/9cdaac63-14ec-4ba4-a143-242cb8d97bd2)
-
+Without             |  With Plugin
+:-------------------------:|:-------------------------:
+![image](https://github.com/rachartier/tiny-devicons-auto-colors.nvim/assets/2057541/0130c1d8-12c7-495e-a22a-cb1d8aae7eb1) |  ![image](https://github.com/rachartier/tiny-devicons-auto-colors.nvim/assets/2057541/9cdaac63-14ec-4ba4-a143-242cb8d97bd2)
 
 
 ## Installation
