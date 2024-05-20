@@ -24,6 +24,10 @@ local default_config = {
 }
 
 function M.setup(opts)
+	if opts == nil then
+		opts = {}
+	end
+
 	default_config = vim.tbl_deep_extend("force", default_config, opts)
 
 	M.apply(default_config.colors)
