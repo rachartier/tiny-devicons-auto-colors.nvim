@@ -72,7 +72,7 @@ require('tiny-devicons-auto-colors').setup({
     -- A table of color codes that the plugin will use to assign colors to devicons.
     -- It is preferable to use a color palette from a theme, but you can also define it yourself.
     -- If not provided, the plugin will fetch highlights from the current theme to generate a color palette.
-    colors = theme_colors,
+    -- colors = theme_colors,
     factors = {
         lightness = 1.75, -- A factor to adjust the lightness factor of the matching.
         chroma = 1,       -- A factor to adjust the chroma factor of the matching.
