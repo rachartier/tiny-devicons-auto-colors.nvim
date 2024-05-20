@@ -73,16 +73,20 @@ require('tiny-devicons-auto-colors').setup({
     -- It is preferable to use a color palette from a theme, but you can also define it yourself.
     -- If not provided, the plugin will fetch highlights from the current theme to generate a color palette.
     -- colors = theme_colors,
+
+    -- Adjusts factors to get a better color matching.
     factors = {
-        lightness = 1.75, -- A factor to adjust the lightness factor of the matching.
-        chroma = 1,       -- A factor to adjust the chroma factor of the matching.
-        hue = 1.25, 	  -- A factor to adjust the hue factor of the matching.
+        lightness = 1.75, -- Adjust the lightness factor.
+        chroma = 1,       -- Adjust the chroma factor.
+        hue = 1.25, 	  -- Adjust the hue factor.
     },
+
     -- Cache greatly improve the performance of the plugin. It saves all the matchings in a file.
     cache = {
         enabled = true,
         path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
     },
+
     -- Automatically reload the colors when the colorscheme changes.
     -- Warning: when reloaded, it overrides the colors that you set in `colors`.
     -- It can produce varying results according to the colorscheme, so if you always use the same colorscheme, you can keep it disabled.
