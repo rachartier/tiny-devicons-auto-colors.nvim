@@ -13,6 +13,13 @@ local default_config = {
 		"#ffff00",
 		"#00a1ff",
 		"#00ffe6",
+		"#7f7f7f",
+		"#1e1e1e",
+	},
+	factors = {
+		lightness = 1.45,
+		chroma = 1,
+		hue = 1.25,
 	},
 }
 
@@ -33,21 +40,19 @@ function M.apply(colors)
 		local nearest_color = nil
 		local default_icon_color = icon_object.color
 
-		if default_config ~= nil then
-			if cache[default_icon_color] then
-				nearest_color = cache[default_icon_color]
-			else
-				nearest_color = colorspace.get_nearest_color(default_icon_color, colors)
-				cache[default_icon_color] = nearest_color
-			end
-
-			icons[key_icon] = {
-				icon = icon_object.icon,
-				color = nearest_color,
-				cterm_color = icon_object.cterm_color,
-				name = icon_object.name,
-			}
+		if cache[default_icon_color] then
+			nearest_color = cache[default_icon_color]
+		else
+			nearest_color = colorspace.get_nearest_color(default_icon_color, colors, default_config.factors)
+			cache[default_icon_color] = nearest_color
 		end
+
+		icons[key_icon] = {
+			icon = icon_object.icon,
+			name = icon_object.name,
+			color = nearest_color,
+			cterm_color = icon_object.cterm_color,
+		}
 	end
 
 	require("nvim-web-devicons").set_icon(icons)

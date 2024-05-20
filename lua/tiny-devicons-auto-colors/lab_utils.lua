@@ -52,36 +52,28 @@ function M.xyz_to_lab(x, y, z)
 	return l, a, b
 end
 
+--- Converts RGB color values to LAB.
+--- @param r number: Red component of the color.
+--- @param g number: Green component of the color.
+--- @param b number: Blue component of the color.
+--- @return number: L component of the color.
+--- @return number: A component of the color.
+--- @return number: B component of the color.
 function M.rgb_to_lab(r, g, b)
 	local x, y, z = M.rgb_to_xyz(r, g, b)
 	return M.xyz_to_lab(x, y, z)
 end
 
---- Computes the distance between two colors.
---- @param color1 table: RGB values of the first color.
---- @param color2 table: RGB values of the second color.
---- @param bias table: Bias for each color component.
---- @return number: Distance between the two colors.
-function M.color_distance(color1, color2, bias)
-	local l1, a1, b1 = M.rgb_to_lab(color1[1], color1[2], color1[3])
-	local l2, a2, b2 = M.rgb_to_lab(color2[1], color2[2], color2[3])
-
-	local dl = math.abs(l2 - l1) * bias[1]
-	local da = math.abs(a2 - a1) * bias[2]
-	local db = math.abs(b2 - b1) * bias[3]
-
-	return math.sqrt(dl * dl + da * da + db * db)
-end
-
 --- Computes the CIEDE2000 color difference between two colors.
 --- @param rgb1 table: RGB values of the first color.
 --- @param rgb2 table: RGB values of the second color.
+--- @param factors table: Factors for LAB colorspace.
 --- @return number: CIEDE2000 color difference between the two colors.
-function M.ciede2000(rgb1, rgb2)
+function M.ciede2000(rgb1, rgb2, factors)
 	local l1, a1, b1 = M.rgb_to_lab(rgb1[1], rgb1[2], rgb1[3])
 	local l2, a2, b2 = M.rgb_to_lab(rgb2[1], rgb2[2], rgb2[3])
 
-	local k_l, k_c, k_h = 1, 1, 1
+	local k_l, k_c, k_h = factors.lightness, factors.chroma, factors.hue
 
 	local delta_l = l2 - l1
 
@@ -140,8 +132,9 @@ end
 --- Computes the nearest color from the default colors.
 --- @param color string: Hexadecimal value of the color.
 --- @param colors_table table: Table of colors to compare with.
+--- @param factors table: Factors for LAB colorspace.
 --- @return string: Hexadecimal value of the nearest color.
-function M.get_nearest_color(color, colors_table)
+function M.get_nearest_color(color, colors_table, factors)
 	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
 	local rgb_color = utils.hex_to_rgb(color)
@@ -153,7 +146,7 @@ function M.get_nearest_color(color, colors_table)
 			if value ~= "none" and value ~= "null" then
 				local rgb_value = utils.hex_to_rgb(value)
 
-				local distance = M.ciede2000(rgb_color, rgb_value)
+				local distance = M.ciede2000(rgb_color, rgb_value, factors)
 
 				if distance < nearest_distance then
 					nearest_color = value

@@ -71,10 +71,26 @@ The order of colors does not matter. You can also add as many colors as you want
 ### Options
 
 - `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
+- `factors`: A table of factors: `lightness`, `chroma` and `hue`. You can adjust them to get better results. The default values are `1.45`, `1` and `1.25` respectively.
+
+Example:
+
+```lua
+require('tiny-devicons-auto-colors').setup({
+    colors = theme_colors,
+    factors = {
+        lightness = 1.45,
+        chroma = 1,
+        hue = 1.25,
+    },
+})
+```
 
 After calling `setup`, the plugin will automatically assign colors to all devicons. You do not need to do anything
 
-A function `require("tiny-devicons-auto-colors").apply(colors_table)` is also available to apply the colors. It can be useful if you want to apply the new colors when you change the colorscheme.
+### API
+
+- `require("tiny-devicons-auto-colors").apply(colors_table)`: apply a new colorscheme on devicons. It can be useful if you want to apply the new colors when you change the colorscheme.
 
 ### Misc
 
