@@ -38,7 +38,13 @@ function M.setup(opts)
 end
 
 function M.apply(colors)
-	local devicons = require("nvim-web-devicons").get_icons()
+	local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
+
+	if not ok then
+		vim.api.nvim_err_writeln("Error getting icons. Cannot find nvim-web-devicons.")
+		return
+	end
+
 	local colorspace = require("tiny-devicons-auto-colors.lab_utils")
 	local hash = require("tiny-devicons-auto-colors.hash")
 	local cache_utils = require("tiny-devicons-auto-colors.cache")
@@ -85,7 +91,10 @@ function M.apply(colors)
 		cache_utils.write_cache(default_config.cache.path, cache)
 	end
 
-	require("nvim-web-devicons").set_icon(icons)
+	local ok, _ = pcall(require("nvim-web-devicons").set_icon, icons)
+	if not ok then
+		vim.api.nvim_err_writeln("Error setting icons.")
+	end
 end
 
 return M

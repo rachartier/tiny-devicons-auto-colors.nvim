@@ -16,7 +16,7 @@ end
 function M.hash_table(t)
 	local hash = 0
 	for k, v in pairs(t) do
-		hash = hash + compute_hash(tostring(k)) + compute_hash(tostring(v))
+		hash = hash + compute_hash(tostring(k) .. tostring(v))
 	end
 	return tostring(hash)
 end
