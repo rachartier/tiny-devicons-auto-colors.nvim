@@ -1,0 +1,152 @@
+*tiny-devicons-auto-colors.nvim.txt*For Neovim >= 0.10.0Last change: 2024 May 20
+
+==============================================================================
+Table of Contents           *tiny-devicons-auto-colors.nvim-table-of-contents*
+
+1. tiny-devicons-auto-colors.nvim|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim|
+  - Images|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-images|
+  - Installation|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-installation|
+  - Setup|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-setup|
+  - Options|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-options|
+  - API    |tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-api|
+  - FAQ    |tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-faq|
+  - Thanks|tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-thanks|
+2. Links                                |tiny-devicons-auto-colors.nvim-links|
+
+==============================================================================
+1. tiny-devicons-auto-colors.nvim*tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim*
+
+A Neovim plugin that automatically assigns colors to devicons based on their
+nearest color in a predefined color palette.
+
+
+IMAGES  *tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-images*
+
+  -----------------------------------------------------------------------
+                Without                           With Plugin
+  ----------------------------------- -----------------------------------
+                [image]                             [image]
+
+  -----------------------------------------------------------------------
+
+INSTALLATION*tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-installation*
+
+With Lazy.nvim:
+
+>lua
+    {
+        "rachartier/tiny-devicons-auto-colors.nvim",
+        dependencies = {
+            "nvim-tree/nvim-web-devicons"
+        },
+        event = "VeryLazy",
+        config = function()
+            require('tiny-devicons-auto-colors').setup()
+        end
+    }
+<
+
+
+SETUP    *tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-setup*
+
+You must call `setup` to enable the plugin. A color palette is not needed, but
+it can greatly improve the results.
+
+Here is an example with catppuccin theme:
+
+>lua
+    
+    -- You can add as many colors as you like. More colors is better to estimate the nearest color for each devicon.
+    local theme_colors = require("catppuccin.palettes").get_palette("macchiato")
+    
+    require('tiny-devicons-auto-colors').setup({
+        colors = theme_colors,
+    })
+<
+
+It should work with any theme that provides a color palette. If you want to use
+a custom color palette, you can define it yourself:
+
+>lua
+    require('tiny-devicons-auto-colors').setup({
+        colors = {
+            "#0000ff",
+            "#00ffe6",
+            "#00ff00",
+            "#ff00ff",
+            "#ff8000",
+            "#6e00ff",
+            "#ff0000",
+            "#ffffff",
+            "#ffff00",
+            "#00a1ff",
+            "#00ffe6"
+        },
+    })
+<
+
+The order of colors does not matter. You can also add as many colors as you
+want, as more colors results in better color matching.
+
+
+OPTIONS*tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-options*
+
+>lua
+    -- Default configuration
+    require('tiny-devicons-auto-colors').setup({
+        -- A table of color codes that the plugin will use to assign colors to devicons.
+        -- It is preferable to use a color palette from a theme, but you can also define it yourself.
+        -- If not provided, the plugin will fetch highlights from the current theme to generate a color palette.
+        -- colors = theme_colors,
+    
+        -- Adjusts factors to get a better color matching.
+        factors = {
+            lightness = 1.75, -- Adjust the lightness factor.
+            chroma = 1,       -- Adjust the chroma factor.
+            hue = 1.25,       -- Adjust the hue factor.
+        },
+    
+        -- Cache greatly improve the performance of the plugin. It saves all the matchings in a file.
+        cache = {
+            enabled = true,
+            path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
+        },
+    
+        -- Automatically reload the colors when the colorscheme changes.
+        -- Warning: when reloaded, it overrides the colors that you set in `colors`.
+        -- It can produce varying results according to the colorscheme, so if you always use the same colorscheme, you can keep it disabled.
+        autoreload = false,
+    })
+<
+
+After calling `setup`, the plugin will automatically assign colors to all
+devicons. You do not need to do anything
+
+
+API        *tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-api*
+
+- `require("tiny-devicons-auto-colors").apply(colors_table)`apply a new colorscheme on devicons. It can be useful if you want to apply the new colors when you change the colorscheme.
+
+
+FAQ        *tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-faq*
+
+
+MY DEVICONS HAVE STRANGE COLORS…
+
+You may need to adjust the factors (`lightness`, `chroma` and `hue`) as it can
+be very sensitive to the colors you provide. I’ve tried to find a good
+balance, but it may not work for all colorscheme…
+
+
+THANKS  *tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-thanks*
+
+for the idea!
+
+==============================================================================
+2. Links                                *tiny-devicons-auto-colors.nvim-links*
+
+1. *devicon-colorscheme.nvim*: https://github.com/dgox16/devicon-colorscheme.nvim
+
+Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
+
+vim:tw=78:ts=8:noet:ft=help:norl:
