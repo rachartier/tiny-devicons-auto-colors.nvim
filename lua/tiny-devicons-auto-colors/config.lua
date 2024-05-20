@@ -1,21 +1,55 @@
 local M = {}
 
+local color_utils = require("tiny-devicons-auto-colors.color_utils")
+
+local function get_hl(name, bg)
+	local hl = vim.api.nvim_get_hl(0, {
+		name = name,
+	})
+
+	if hl == nil or hl.fg == nil then
+		return nil
+	end
+
+	if bg and hl.bg ~= nil then
+		return color_utils.number_to_hex(hl.bg)
+	end
+
+	return color_utils.number_to_hex(hl.fg)
+end
+
+local function get_hl_colors()
+	return {
+		get_hl("WarningMsg"),
+		get_hl("DiffAdd"),
+		get_hl("DiagnosticSignOk"),
+		get_hl("DiagnosticSignWarn"),
+		get_hl("DiagnosticSignError"),
+		get_hl("DiagnosticSignHint"),
+		get_hl("DiffAdd", true),
+		get_hl("DiffChange", true),
+		get_hl("DiffDelete", true),
+		get_hl("Function"),
+		get_hl("Identifier"),
+		get_hl("LineNr"),
+		get_hl("Include"),
+		get_hl("Label"),
+		get_hl("WinBar"),
+		get_hl("Pmenu"),
+		get_hl("ErrorMsg"),
+		get_hl("MoreMsg"),
+		get_hl("Comment"),
+		get_hl("Type"),
+		get_hl("Identifier"),
+		get_hl("Constant"),
+		get_hl("ModeMsg"),
+		get_hl("Normal"),
+		get_hl("TabLineSel"),
+	}
+end
+
 local default_config = {
-	colors = {
-		"#0000ff",
-		"#00ffe6",
-		"#00ff00",
-		"#ff00ff",
-		"#ff8000",
-		"#6e00ff",
-		"#ff0000",
-		"#ffffff",
-		"#ffff00",
-		"#00a1ff",
-		"#00ffe6",
-		"#7f7f7f",
-		"#1e1e1e",
-	},
+	colors = {},
 	factors = {
 		lightness = 1.75,
 		chroma = 1,
@@ -25,6 +59,7 @@ local default_config = {
 		enabled = true,
 		path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors.cache",
 	},
+	autoreload = false,
 }
 
 function M.setup(opts)
@@ -32,7 +67,24 @@ function M.setup(opts)
 		opts = {}
 	end
 
+	if opts.colors == nil then
+		default_config.colors = get_hl_colors()
+	end
+
 	default_config = vim.tbl_deep_extend("force", default_config, opts)
+
+	if default_config.autoreload then
+		vim.api.nvim_create_autocmd("Colorscheme", {
+			group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
+			callback = function()
+				local colors = {}
+
+				colors = get_hl_colors()
+
+				M.apply(colors)
+			end,
+		})
+	end
 
 	M.apply(default_config.colors)
 end
@@ -91,7 +143,7 @@ function M.apply(colors)
 		cache_utils.write_cache(default_config.cache.path, cache)
 	end
 
-	local ok, _ = pcall(require("nvim-web-devicons").set_icon, icons)
+	ok, _ = pcall(require("nvim-web-devicons").set_icon, icons)
 	if not ok then
 		vim.api.nvim_err_writeln("Error setting icons.")
 	end

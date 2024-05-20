@@ -28,7 +28,7 @@ With Lazy.nvim:
 
 ##  Setup
 
-You must call `setup` to enable the plugin. Also, you should provide a color palette for the plugin to use, as the default color palette is to warn you that you need to provide one!
+You must call `setup` to enable the plugin. A color palette is not needed, but it can greatly improve the results.
 
 Here is an example with catppuccin theme:
 
@@ -66,26 +66,27 @@ The order of colors does not matter. You can also add as many colors as you want
 
 ## Options
 
-- `colors`: A table of color codes that the plugin will use to assign colors to devicons. The plugin will choose the nearest color in this palette for each devicon.
-- `factors`: A table of factors: `lightness`, `chroma` and `hue`. You can adjust them to get better results. The default values are `1.75`, `1` and `1.25` respectively.
-- `cache` greatly improve the performance of the plugin.
-	- `enabled`: Enable or disable caching. Default is `true`.
-    - `path`: The path where the cache will be stored. Default is `vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json"`.
-
-Example:
-
 ```lua
+-- Default configuration
 require('tiny-devicons-auto-colors').setup({
+    -- A table of color codes that the plugin will use to assign colors to devicons.
+    -- It is preferable to use a color palette from a theme, but you can also define it yourself.
+    -- If not provided, the plugin will fetch highlights from the current theme to generate a color palette.
     colors = theme_colors,
     factors = {
-        lightness = 1.45,
-        chroma = 1,
-        hue = 1.25,
+        lightness = 1.75, -- A factor to adjust the lightness factor of the matching.
+        chroma = 1,       -- A factor to adjust the chroma factor of the matching.
+        hue = 1.25, 	  -- A factor to adjust the hue factor of the matching.
     },
+    -- Cache greatly improve the performance of the plugin. It saves all the matchings in a file.
     cache = {
         enabled = true,
         path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
     },
+    -- Automatically reload the colors when the colorscheme changes.
+    -- Warning: when reloaded, it overrides the colors that you set in `colors`.
+    -- It can produce varying results according to the colorscheme, so if you always use the same colorscheme, you can keep it disabled.
+    autoreload = false,
 })
 ```
 
@@ -95,66 +96,8 @@ After calling `setup`, the plugin will automatically assign colors to all devico
 
 - `require("tiny-devicons-auto-colors").apply(colors_table)`: apply a new colorscheme on devicons. It can be useful if you want to apply the new colors when you change the colorscheme.
 
-## Misc
-
-You can do auto-reload on your side if you switch theme with `colorscheme` command:
-
-```lua
-{
-    "rachartier/tiny-devicons-auto-colors.nvim",
-    dependencies = {
-        "nvim-tree/nvim-web-devicons"
-    },
-    event = "VeryLazy",
-    config = function()
-        -- you may need to redefine colors depending on your colorscheme (catppuccin, tokyonight...)
-        -- require('tiny-devicons-auto-colors').setup({
-        --     colors = ...
-        -- }) 
-        require('tiny-devicons-auto-colors').setup() 
-
-        local function number_to_hex(number)
-            number = math.max(0, math.min(16777215, number))
-            local hex = string.format("%06X", number)
-            return "#" .. hex
-        end
-        
-        local function get_hl(name)
-            local hl = vim.api.nvim_get_hl(0, {
-                name = name,
-            })
-        
-            return number_to_hex(hl.fg)
-        end
-        
-        vim.api.nvim_create_autocmd("Colorscheme", {
-            group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
-            callback = function()
-                local colors = {
-                    get_hl("WarningMsg"),
-                    get_hl("ErrorMsg"),
-                    get_hl("MoreMsg"),
-                    get_hl("Comment"),
-                    get_hl("Type"),
-                    get_hl("Identifier"),
-                    get_hl("Constant"),
-                    -- add more...
-                }
-        
-        
-                require("tiny-devicons-auto-colors").apply(colors)
-            end,
-        })
-    end
-}
-```
 
 ## FAQ
-
-#### Why do I need to provide a color palette?
-
-The plugin needs a color palette to assign colors to devicons. It cannot deduce colors from the colorscheme itself, as colorscheme are vastly different from one another,
-and what may be a good color for one colorscheme may not be for another.
 
 #### My devicons have strange colors...
 

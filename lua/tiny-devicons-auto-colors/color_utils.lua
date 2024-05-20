@@ -1,5 +1,14 @@
 local M = {}
 
+--- Converts a number to a hexadecimal color value (string).
+--- @param number number: Number to convert.
+--- @return string: Hexadecimal color value.
+function M.number_to_hex(number)
+	number = math.max(0, math.min(16777215, number))
+	local hex = string.format("%06X", number)
+	return "#" .. hex
+end
+
 function M.atan2(y, x)
 	local theta = math.atan(y / x)
 	if x < 0 then
