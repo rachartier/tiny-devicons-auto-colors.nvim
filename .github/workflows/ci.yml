@@ -6,7 +6,6 @@ on:
 jobs:
   docs:
     runs-on: ubuntu-latest
-    needs: tests
     steps:
       - uses: actions/checkout@v3
       - name: Install Neovim
@@ -22,7 +21,7 @@ jobs:
         uses: kdheepak/panvimdoc@main
         with:
           vimdoc: tiny-devicons-auto-colors.nvim
-          version: "Neovim >= 0.10.0"
+          version: "Neovim >= 0.7.0"
           demojify: true
           treesitter: true
       - name: Push changes
