@@ -1,6 +1,5 @@
 *tiny-devicons-auto-colors.nvim.txt*For Neovim >= 0.7.0Last change: 2024 May 21
 
-
 ==============================================================================
 Table of Contents           *tiny-devicons-auto-colors.nvim-table-of-contents*
 
@@ -133,7 +132,6 @@ OPTIONS*tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-options*
         ignore = {
         }
     
-
         -- Automatically reload the colors when the colorscheme changes.
         -- Warning: when reloaded, it overrides the colors that you set in `colors`.
         -- It can produce varying results according to the colorscheme, so if you always use the same colorscheme, you can keep it disabled.
