@@ -88,6 +88,7 @@ require('tiny-devicons-auto-colors').setup({
     },
 
     -- Precise search can result in better colors matching by automatically tweaking the factors.
+    -- It's nice to let it enabled when cache is enabled.
     precise_search = {
         enabled = true,
         iteration = 10,   -- It goes hand in hand with 'precision'
@@ -97,8 +98,8 @@ require('tiny-devicons-auto-colors').setup({
 
     -- A list of icon name to ignore.
     -- You can refer to: https://github.com/nvim-tree/nvim-web-devicons/blob/master/lua/nvim-web-devicons/icons-default.lua
-    -- It is good to enable when you have cache enabled.
-    -- To get the icon's name.
+    -- to get the icon's name.
+    --
     -- example:
     -- ignore = {
     -- 		"lua",
