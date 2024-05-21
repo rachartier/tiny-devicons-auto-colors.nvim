@@ -223,13 +223,16 @@ local function get_nearest_color(lab, colors_table, factors)
 	return nearest_color, nearest_distance
 end
 
-local function precise_search(lab, colors_table, factors, threshold, precision)
+local function precise_search(lab, colors_table, factors, opts)
 	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
 	local i = 0
 
-	while nearest_distance > threshold and i < precision do
-		local offset = 1 / precision
+	local t = 0
+
+	while nearest_distance > opts.threshold and i < opts.iteration do
+		local offset = 1 / opts.precision
+		t = t + offset
 
 		factors.lightness = factors.lightness + offset
 		factors.hue = factors.hue + offset / 4
@@ -261,8 +264,7 @@ function M.match_color(color, colors_table, factors, precise_search_opts)
 
 	local threshold = precise_search_opts.threshold
 	if nearest_distance > threshold and precise_search_opts.enabled == true then
-		local precision = precise_search_opts.precision
-		return precise_search({ l1, a1, b1 }, colors_table, factors, threshold, precision)
+		return precise_search({ l1, a1, b1 }, colors_table, factors, precise_search_opts)
 	end
 
 	return nearest_color

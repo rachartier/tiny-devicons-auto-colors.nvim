@@ -13,6 +13,7 @@ local default_config = {
 	},
 	precise_search = {
 		enabled = true,
+		iteration = 10,
 		precision = 20,
 		threshold = 23,
 	},
