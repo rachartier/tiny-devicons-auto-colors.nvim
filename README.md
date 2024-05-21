@@ -89,7 +89,7 @@ require('tiny-devicons-auto-colors').setup({
 
     -- Precise search can result in better colors matching by automatically tweaking the factors.
     precise_search = {
-		enabled = true,
+        enabled = true,
         precision = 20,   -- The higher the precision, better the search is
         threshold = 23,   -- Threshold to consider a color as a match (larger is more permissive)
     },
