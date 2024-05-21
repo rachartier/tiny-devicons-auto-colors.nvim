@@ -1,4 +1,4 @@
-*tiny-devicons-auto-colors.nvim.txt*For Neovim >= 0.10.0Last change: 2024 May 20
+*tiny-devicons-auto-colors.nvim.txt*For Neovim >= 0.7.0Last change: 2024 May 21
 
 ==============================================================================
 Table of Contents           *tiny-devicons-auto-colors.nvim-table-of-contents*
@@ -110,6 +110,13 @@ OPTIONS*tiny-devicons-auto-colors.nvim-tiny-devicons-auto-colors.nvim-options*
         cache = {
             enabled = true,
             path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
+        },
+    
+        -- Precise search can result in better colors matching by automatically tweaking the factors.
+        precise_search = {
+            enabled = true,
+            precision = 20,   -- The higher the precision, better the search is
+            threshold = 23,   -- Threshold to consider a color as a match (larger is more permissive)
         },
     
         -- Automatically reload the colors when the colorscheme changes.
