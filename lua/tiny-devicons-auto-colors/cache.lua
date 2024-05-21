@@ -4,16 +4,19 @@ local M = {}
 --- @param path string: Path to cache file
 --- @return table: Cache table
 function M.read_cache(path)
-	local cache = nil
-
 	if vim.fn.filereadable(path) == 1 then
 		local f = io.open(path, "r")
+		if f == nil then
+			return {}
+		end
+
 		local json = vim.json.decode(f:read("*all"))
-		cache = json
 		f:close()
+
+		return json
 	end
 
-	return cache
+	return {}
 end
 
 --- Write cache to file
@@ -22,6 +25,11 @@ end
 function M.write_cache(path, cache)
 	local f = io.open(path, "w")
 	local encoded_json = vim.json.encode(cache)
+
+	if f == nil then
+		return
+	end
+
 	f:write(encoded_json)
 	f:close()
 end

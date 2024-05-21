@@ -1,5 +1,7 @@
 local M = {}
 
+local cache_utils = require("tiny-devicons-auto-colors.cache")
+
 local default_config = {
 	colors = {},
 	factors = {
@@ -50,20 +52,7 @@ function M.setup(opts)
 	M.apply(default_config.colors)
 end
 
-function M.apply(colors)
-	local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
-
-	if not ok then
-		vim.api.nvim_err_writeln("Error getting icons. Cannot find nvim-web-devicons.")
-		return
-	end
-
-	local colorspace = require("tiny-devicons-auto-colors.lab_utils")
-	local hash = require("tiny-devicons-auto-colors.hash")
-	local cache_utils = require("tiny-devicons-auto-colors.cache")
-	local hash_colors = hash.hash_table(colors)
-
-	local icons = {}
+local function prepare_cache(hash_colors)
 	local cache = nil
 	local use_cache = false
 
@@ -80,20 +69,53 @@ function M.apply(colors)
 		}
 	end
 
-	for ignore_key, ignore_value in pairs(default_config.ignore) do
-		default_config.ignore[ignore_key] = ignore_value:lower()
+	return cache, use_cache
+end
+
+local function filter_devicons(devicons)
+	if #default_config.ignore > 0 then
+		local filtered_devicons = {}
+
+		for ignore_key, ignore_value in pairs(default_config.ignore) do
+			default_config.ignore[ignore_key] = ignore_value:lower()
+		end
+
+		filtered_devicons = vim.tbl_filter(function(icon)
+			return not vim.tbl_contains(default_config.ignore, icon.name:lower())
+		end, devicons)
+
+		return filtered_devicons
 	end
 
-	local filtered_devicons = vim.tbl_filter(function(icon)
-		return not vim.tbl_contains(default_config.ignore, icon.name:lower())
-	end, devicons)
+	return devicons
+end
 
-	for key_icon, icon_object in pairs(filtered_devicons) do
+function M.apply(colors)
+	local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
+
+	if not ok then
+		vim.api.nvim_err_writeln("Error getting icons. Cannot find nvim-web-devicons.")
+		return
+	end
+
+	local colorspace = require("tiny-devicons-auto-colors.lab_utils")
+	local hash = require("tiny-devicons-auto-colors.hash")
+	local hash_colors = hash.hash_table(colors)
+
+	local icons = {}
+	local cache = nil
+	local use_cache = false
+
+	cache, use_cache = prepare_cache(hash_colors)
+	devicons = filter_devicons(devicons)
+
+	for key_icon, icon_object in pairs(devicons) do
 		local nearest_color = nil
 		local default_icon_color = icon_object.color
 
-		if use_cache or cache.colors[default_icon_color] then
-			nearest_color = cache.colors[default_icon_color]
+		local cached_icon = cache.colors[default_icon_color]
+		if use_cache or cached_icon then
+			nearest_color = cached_icon
 		else
 			nearest_color = colorspace.match_color(
 				default_icon_color,
