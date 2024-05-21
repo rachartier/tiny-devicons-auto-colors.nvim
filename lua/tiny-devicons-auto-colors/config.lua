@@ -11,6 +11,11 @@ local default_config = {
 		enabled = true,
 		path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors.cache",
 	},
+	precise_search = {
+		enabled = true,
+		precision = 20,
+		threshold = 23,
+	},
 	autoreload = false,
 }
 
@@ -80,7 +85,12 @@ function M.apply(colors)
 		if use_cache or cache.colors[default_icon_color] then
 			nearest_color = cache.colors[default_icon_color]
 		else
-			nearest_color = colorspace.get_nearest_color(default_icon_color, colors, default_config.factors)
+			nearest_color = colorspace.match_color(
+				default_icon_color,
+				colors,
+				default_config.factors,
+				default_config.precise_search
+			)
 			cache.colors[default_icon_color] = nearest_color
 		end
 

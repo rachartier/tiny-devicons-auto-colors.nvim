@@ -1,4 +1,5 @@
 local M = {}
+M.__depth = 0
 
 local utils = require("tiny-devicons-auto-colors.color_utils")
 
@@ -65,13 +66,13 @@ function M.rgb_to_lab(r, g, b)
 end
 
 --- Computes the CIEDE2000 color difference between two colors.
---- @param rgb1 table: RGB values of the first color.
---- @param rgb2 table: RGB values of the second color.
+--- @param lab1 table: LAB values of the first color.
+--- @param lab2 table: LAB values of the second color.
 --- @param factors table: Factors for LAB colorspace.
 --- @return number: CIEDE2000 color difference between the two colors.
-function M.ciede2000(rgb1, rgb2, factors)
-	local l1, a1, b1 = M.rgb_to_lab(rgb1[1], rgb1[2], rgb1[3])
-	local l2, a2, b2 = M.rgb_to_lab(rgb2[1], rgb2[2], rgb2[3])
+function M.ciede2000(lab1, lab2, factors)
+	local l1, a1, b1 = lab1[1], lab1[2], lab1[3]
+	local l2, a2, b2 = lab2[1], lab2[2], lab2[3]
 
 	local k_l, k_c, k_h = factors.lightness, factors.chroma, factors.hue
 
@@ -129,15 +130,77 @@ function M.ciede2000(rgb1, rgb2, factors)
 	return delta_e
 end
 
---- Computes the nearest color from the default colors.
---- @param color string: Hexadecimal value of the color.
---- @param colors_table table: Table of colors to compare with.
---- @param factors table: Factors for LAB colorspace.
---- @return string: Hexadecimal value of the nearest color.
-function M.get_nearest_color(color, colors_table, factors)
+--- Converts LAB color values to XYZ.
+--- The LAB values should be in the range [0, 100] for L and [-128, 127] for A and B.
+--- The returned XYZ values are in the range [0, 100].
+--- @param l number: L component of the color.
+--- @param a number: A component of the color.
+--- @param b number: B component of the color.
+--- @return number: X component of the color.
+--- @return number: Y component of the color.
+--- @return number: Z component of the color.
+function M.lab_to_xyz(l, a, b)
+	local y = (l + 16) / 116
+	local x = a / 500 + y
+	local z = y - b / 200
+
+	local function pivot_lab(n)
+		return n > 0.206893034 and n ^ 3 or (n - 16 / 116) / 7.787
+	end
+
+	x, y, z = pivot_lab(x), pivot_lab(y), pivot_lab(z)
+
+	local refX, refY, refZ = 95.047, 100.000, 108.883
+	return x * refX, y * refY, z * refZ
+end
+
+--- Converts XYZ color values to RGB.
+--- The XYZ values should be in the range [0, 100] and they will be scaled down to the range [0, 1].
+--- The conversion formula includes a gamma correction.
+--- The returned RGB values are in the range [0, 255].
+--- @param x number: X component of the color.
+--- @param y number: Y component of the color.
+--- @param z number: Z component of the color.
+--- @return number: Red component of the color.
+--- @return number: Green component of the color.
+--- @return number: Blue component of the color.
+function M.xyz_to_rgb(x, y, z)
+	x = x / 100
+	y = y / 100
+	z = z / 100
+
+	local r = x * 3.2406 + y * -1.5372 + z * -0.4986
+	local g = x * -0.9689 + y * 1.8758 + z * 0.0415
+	local b = x * 0.0557 + y * -0.2040 + z * 1.0570
+
+	local function gamma_correct(n)
+		return n > 0.0031308 and 1.055 * (n ^ (1 / 2.4)) - 0.055 or 12.92 * n
+	end
+
+	r, g, b = gamma_correct(r), gamma_correct(g), gamma_correct(b)
+
+	r = math.max(0, math.min(255, r * 255))
+	g = math.max(0, math.min(255, g * 255))
+	b = math.max(0, math.min(255, b * 255))
+
+	return r, g, b
+end
+
+--- Converts LAB color values to RGB.
+--- @param l number: L component of the color.
+--- @param a number: A component of the color.
+--- @param b number: B component of the color.
+--- @return number: Red component of the color.
+--- @return number: Green component of the color.
+--- @return number: Blue component of the color.
+function M.lab_to_rgb(l, a, b)
+	local x, y, z = M.lab_to_xyz(l, a, b)
+	return M.xyz_to_rgb(x, y, z)
+end
+
+local function get_nearest_color(lab, colors_table, factors)
 	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
-	local rgb_color = utils.hex_to_rgb(color)
 
 	for _, value in pairs(colors_table) do
 		if type(value) == "string" then
@@ -145,8 +208,9 @@ function M.get_nearest_color(color, colors_table, factors)
 
 			if value ~= "none" and value ~= "null" then
 				local rgb_value = utils.hex_to_rgb(value)
+				local l2, a2, b2 = M.rgb_to_lab(rgb_value[1], rgb_value[2], rgb_value[3])
 
-				local distance = M.ciede2000(rgb_color, rgb_value, factors)
+				local distance = M.ciede2000(lab, { l2, a2, b2 }, factors)
 
 				if distance < nearest_distance then
 					nearest_color = value
@@ -154,6 +218,52 @@ function M.get_nearest_color(color, colors_table, factors)
 				end
 			end
 		end
+	end
+
+	return nearest_color, nearest_distance
+end
+
+local function precise_search(lab, colors_table, factors, threshold, precision)
+	local nearest_color = "#FFFFFF"
+	local nearest_distance = math.huge
+	local i = 0
+
+	while nearest_distance > threshold and i < precision do
+		local offset = 1 / precision
+
+		factors.lightness = factors.lightness + offset
+		factors.hue = factors.hue + offset / 4
+
+		nearest_color, nearest_distance = get_nearest_color(lab, colors_table, factors)
+
+		i = i + 1
+	end
+
+	return nearest_color
+end
+
+--- Finds the nearest color in a table of colors to a given color.
+--- @param color string: Hexadecimal value of the color.
+--- @param colors_table table: Table of colors to compare with.
+--- @param factors table: Factors for LAB colorspace.
+--- @return string: Hexadecimal value of the nearest color.
+function M.match_color(color, colors_table, factors, precise_search_opts)
+	if precise_search_opts == nil then
+		precise_search_opts = {}
+	end
+
+	local nearest_color = "#FFFFFF"
+	local nearest_distance = math.huge
+	local rgb_color = utils.hex_to_rgb(color)
+	local l1, a1, b1 = M.rgb_to_lab(rgb_color[1], rgb_color[2], rgb_color[3])
+
+	nearest_color, nearest_distance = get_nearest_color({ l1, a1, b1 }, colors_table, factors)
+
+	local threshold = precise_search_opts.threshold
+	if nearest_distance > threshold and precise_search_opts.enabled == true then
+		local precision = precise_search_opts.precision
+		print("ok")
+		return precise_search({ l1, a1, b1 }, colors_table, factors, threshold, precision)
 	end
 
 	return nearest_color
