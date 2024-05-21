@@ -87,6 +87,26 @@ require('tiny-devicons-auto-colors').setup({
         path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-cache.json",
     },
 
+	-- Precise search can result in better colors matching by automatically tweaking the factors.
+    precise_search = {
+		enabled = true,
+        precision = 20,   -- The higher the precision, better the search is
+        threshold = 23,   -- Threshold to consider a color as a match (larger is more permissive)
+    },
+
+	-- A list of icon name to ignore.
+    -- You can refer to: https://github.com/nvim-tree/nvim-web-devicons/blob/master/lua/nvim-web-devicons/icons-default.lua
+    -- To get the icon's name.
+    -- example:
+    -- ignore = {
+    -- 		"lua",
+    -- 		"vim",
+    -- 		"cs",
+    -- 		"json"
+    -- }
+    ignore = {
+    }
+
     -- Automatically reload the colors when the colorscheme changes.
     -- Warning: when reloaded, it overrides the colors that you set in `colors`.
     -- It can produce varying results according to the colorscheme, so if you always use the same colorscheme, you can keep it disabled.

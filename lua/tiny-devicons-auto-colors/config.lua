@@ -11,6 +11,12 @@ local default_config = {
 		enabled = true,
 		path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors.cache",
 	},
+	precise_search = {
+		enabled = true,
+		precision = 20,
+		threshold = 23,
+	},
+	ignore = {},
 	autoreload = false,
 }
 
@@ -73,14 +79,27 @@ function M.apply(colors)
 		}
 	end
 
-	for key_icon, icon_object in pairs(devicons) do
+	for ignore_key, ignore_value in pairs(default_config.ignore) do
+		default_config.ignore[ignore_key] = ignore_value:lower()
+	end
+
+	local filtered_devicons = vim.tbl_filter(function(icon)
+		return not vim.tbl_contains(default_config.ignore, icon.name:lower())
+	end, devicons)
+
+	for key_icon, icon_object in pairs(filtered_devicons) do
 		local nearest_color = nil
 		local default_icon_color = icon_object.color
 
 		if use_cache or cache.colors[default_icon_color] then
 			nearest_color = cache.colors[default_icon_color]
 		else
-			nearest_color = colorspace.get_nearest_color(default_icon_color, colors, default_config.factors)
+			nearest_color = colorspace.match_color(
+				default_icon_color,
+				colors,
+				default_config.factors,
+				default_config.precise_search
+			)
 			cache.colors[default_icon_color] = nearest_color
 		end
 
