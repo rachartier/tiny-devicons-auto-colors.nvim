@@ -33,9 +33,7 @@ end
 --- @param x number: X component of the color.
 --- @param y number: Y component of the color.
 --- @param z number: Z component of the color.
---- @return number: L component of the color.
---- @return number: A component of the color.
---- @return number: B component of the color.
+--- @return table: LAB values of the color.
 function M.xyz_to_lab(x, y, z)
 	local function pivot_XYZ(n)
 		return n > 0.008856 and n ^ (1 / 3) or (7.787 * n) + (16 / 116)
@@ -50,16 +48,14 @@ function M.xyz_to_lab(x, y, z)
 	local a = 500 * (x - y)
 	local b = 200 * (y - z)
 
-	return l, a, b
+	return { l, a, b }
 end
 
 --- Converts RGB color values to LAB.
 --- @param r number: Red component of the color.
 --- @param g number: Green component of the color.
 --- @param b number: Blue component of the color.
---- @return number: L component of the color.
---- @return number: A component of the color.
---- @return number: B component of the color.
+--- @return table: LAB values of the color.
 function M.rgb_to_lab(r, g, b)
 	local x, y, z = M.rgb_to_xyz(r, g, b)
 	return M.xyz_to_lab(x, y, z)
@@ -198,25 +194,16 @@ function M.lab_to_rgb(l, a, b)
 	return M.xyz_to_rgb(x, y, z)
 end
 
-local function get_nearest_color(lab, colors_table, factors)
+local function get_nearest_color(lab, lab_colors_table, factors)
 	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
 
-	for _, value in pairs(colors_table) do
-		if type(value) == "string" then
-			value = value:lower()
+	for rgb_value, lab_value in pairs(lab_colors_table) do
+		local distance = M.ciede2000(lab, lab_value, factors)
 
-			if value ~= "none" and value ~= "null" then
-				local rgb_value = utils.hex_to_rgb(value)
-				local l2, a2, b2 = M.rgb_to_lab(rgb_value[1], rgb_value[2], rgb_value[3])
-
-				local distance = M.ciede2000(lab, { l2, a2, b2 }, factors)
-
-				if distance < nearest_distance then
-					nearest_color = value
-					nearest_distance = distance
-				end
-			end
+		if distance < nearest_distance then
+			nearest_color = rgb_value
+			nearest_distance = distance
 		end
 	end
 
@@ -228,11 +215,8 @@ local function precise_search(lab, colors_table, factors, opts)
 	local nearest_distance = math.huge
 	local i = 0
 
-	local t = 0
-
 	while nearest_distance > opts.threshold and i < opts.iteration do
 		local offset = 1 / opts.precision
-		t = t + offset
 
 		factors.lightness = factors.lightness + offset
 		factors.hue = factors.hue + offset / 4
@@ -247,10 +231,10 @@ end
 
 --- Finds the nearest color in a table of colors to a given color.
 --- @param color string: Hexadecimal value of the color.
---- @param colors_table table: Table of colors to compare with.
+--- @param lab_colors_table table: Table of colors to compare with.
 --- @param factors table: Factors for LAB colorspace.
 --- @return string: Hexadecimal value of the nearest color.
-function M.match_color(color, colors_table, factors, precise_search_opts)
+function M.match_color(color, lab_colors_table, factors, precise_search_opts)
 	if precise_search_opts == nil then
 		precise_search_opts = {}
 	end
@@ -258,13 +242,13 @@ function M.match_color(color, colors_table, factors, precise_search_opts)
 	local nearest_color = "#FFFFFF"
 	local nearest_distance = math.huge
 	local rgb_color = utils.hex_to_rgb(color)
-	local l1, a1, b1 = M.rgb_to_lab(rgb_color[1], rgb_color[2], rgb_color[3])
+	local lab = M.rgb_to_lab(rgb_color[1], rgb_color[2], rgb_color[3])
 
-	nearest_color, nearest_distance = get_nearest_color({ l1, a1, b1 }, colors_table, factors)
+	nearest_color, nearest_distance = get_nearest_color(lab, lab_colors_table, factors)
 
 	local threshold = precise_search_opts.threshold
 	if nearest_distance > threshold and precise_search_opts.enabled == true then
-		return precise_search({ l1, a1, b1 }, colors_table, factors, precise_search_opts)
+		nearest_color = precise_search(lab, lab_colors_table, factors, precise_search_opts)
 	end
 
 	return nearest_color

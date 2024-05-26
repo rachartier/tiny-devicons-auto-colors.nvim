@@ -1,6 +1,8 @@
 local M = {}
 
 local cache_utils = require("tiny-devicons-auto-colors.cache")
+local lab_utils = require("tiny-devicons-auto-colors.lab_utils")
+local utils = require("tiny-devicons-auto-colors.color_utils")
 
 local default_config = {
 	colors = {},
@@ -90,6 +92,24 @@ local function filter_devicons(devicons)
 	return devicons
 end
 
+local function convert_colors_table_to_lab(colors_table)
+	local new_colors_table = {}
+
+	for _, value in pairs(colors_table) do
+		if type(value) == "string" then
+			value = value:lower()
+			if value ~= "none" and value ~= "null" then
+				local rgb = utils.hex_to_rgb(value)
+				local lab = lab_utils.rgb_to_lab(rgb[1], rgb[2], rgb[3])
+
+				new_colors_table[value] = lab
+			end
+		end
+	end
+
+	return new_colors_table
+end
+
 function M.apply(colors)
 	local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
 
@@ -109,11 +129,15 @@ function M.apply(colors)
 	cache, use_cache = prepare_cache(hash_colors)
 	devicons = filter_devicons(devicons)
 
+	if not use_cache then
+		colors = convert_colors_table_to_lab(colors)
+	end
+
 	for key_icon, icon_object in pairs(devicons) do
 		local nearest_color = nil
 		local default_icon_color = icon_object.color
-
 		local cached_icon = cache.colors[default_icon_color]
+
 		if use_cache or cached_icon then
 			nearest_color = cached_icon
 		else
