@@ -54,9 +54,16 @@ function M.setup(opts)
 	M.apply(default_config.colors)
 end
 
-local function prepare_cache(hash_colors)
+local function prepare_cache(hash_colors, bypass_cache)
 	local cache = nil
 	local use_cache = false
+
+	if bypass_cache then
+		return {
+			hash_colors = hash_colors,
+			colors = {},
+		}, false
+	end
 
 	if default_config.cache.enabled then
 		cache = cache_utils.read_cache(default_config.cache.path)
@@ -110,7 +117,11 @@ local function convert_colors_table_to_lab(colors_table)
 	return new_colors_table
 end
 
-function M.apply(colors)
+function M.apply(colors, bypass_cache)
+	if bypass_cache == nil then
+		bypass_cache = false
+	end
+
 	local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
 
 	if not ok then
@@ -126,7 +137,7 @@ function M.apply(colors)
 	local cache = nil
 	local use_cache = false
 
-	cache, use_cache = prepare_cache(hash_colors)
+	cache, use_cache = prepare_cache(hash_colors, bypass_cache)
 	devicons = filter_devicons(devicons)
 
 	if not use_cache then
@@ -158,7 +169,7 @@ function M.apply(colors)
 		}
 	end
 
-	if default_config.cache.enabled and not use_cache then
+	if bypass_cache == false and default_config.cache.enabled and not use_cache then
 		cache.hash_colors = hash_colors
 		cache_utils.write_cache(default_config.cache.path, cache)
 	end
@@ -167,6 +178,10 @@ function M.apply(colors)
 	if not ok then
 		vim.api.nvim_err_writeln("Error setting icons.")
 	end
+end
+
+function M.apply_no_cache(colors)
+	M.apply(colors, true)
 end
 
 return M
