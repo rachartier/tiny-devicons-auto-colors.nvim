@@ -105,7 +105,7 @@ local function convert_colors_table_to_lab(colors_table)
 	for _, value in pairs(colors_table) do
 		if type(value) == "string" then
 			value = value:lower()
-			if value ~= "none" and value ~= "null" then
+			if value ~= "none" and value ~= "null" and value ~= nil then
 				local rgb = utils.hex_to_rgb(value)
 				local lab = lab_utils.rgb_to_lab(rgb[1], rgb[2], rgb[3])
 
@@ -149,24 +149,26 @@ function M.apply(colors, bypass_cache)
 		local default_icon_color = icon_object.color
 		local cached_icon = cache.colors[default_icon_color]
 
-		if use_cache or cached_icon then
-			nearest_color = cached_icon
-		else
-			nearest_color = colorspace.match_color(
-				default_icon_color,
-				colors,
-				default_config.factors,
-				default_config.precise_search
-			)
-			cache.colors[default_icon_color] = nearest_color
-		end
+		if default_icon_color ~= nil then
+			if use_cache or cached_icon then
+				nearest_color = cached_icon
+			else
+				nearest_color = colorspace.match_color(
+					default_icon_color,
+					colors,
+					default_config.factors,
+					default_config.precise_search
+				)
+				cache.colors[default_icon_color] = nearest_color
+			end
 
-		icons[key_icon] = {
-			icon = icon_object.icon,
-			name = icon_object.name,
-			color = nearest_color,
-			cterm_color = icon_object.cterm_color,
-		}
+			icons[key_icon] = {
+				icon = icon_object.icon,
+				name = icon_object.name,
+				color = nearest_color,
+				cterm_color = icon_object.cterm_color,
+			}
+		end
 	end
 
 	if bypass_cache == false and default_config.cache.enabled and not use_cache then
