@@ -46,7 +46,7 @@ function M.setup(opts)
 
 				colors = custom_hl.get_custom_colors()
 
-				M.apply(colors)
+				M.apply(colors, true)
 			end,
 		})
 	end
