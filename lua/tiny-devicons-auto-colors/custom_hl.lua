@@ -58,20 +58,18 @@ function M.get_custom_colors()
 		get_hl("WildMenu"),
 	}
 
-	local indexes_to_remove = {}
+	local seen = {}
+	local indexes = {}
 
-	for i = 1, #colors do
-		for j = 1, #colors do
-			if colors[i] == colors[j] and i ~= j then
-				if not vim.tbl_contains(indexes_to_remove, j) then
-					table.insert(indexes_to_remove, j)
-				end
-			end
+	for i, v in ipairs(colors) do
+		if seen[v] then
+			table.insert(indexes, i)
 		end
+		seen[v] = true
 	end
 
-	for _, index in ipairs(indexes_to_remove) do
-		table.remove(colors, index)
+	for i = #indexes, 1, -1 do
+		table.remove(colors, indexes[i])
 	end
 
 	return colors

@@ -14,6 +14,7 @@ local default_config = {
 	cache = {
 		enabled = true,
 		path = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors.cache",
+		path_cache_devicons = vim.fn.stdpath("cache") .. "/tiny-devicons-auto-colors-devicons.cache",
 	},
 	precise_search = {
 		enabled = true,
@@ -36,6 +37,25 @@ function M.setup(opts)
 		default_config.colors = custom_hl.get_custom_colors()
 	end
 
+	vim.schedule(function()
+		local ok, devicons = pcall(require("nvim-web-devicons").get_icons)
+
+		if not ok then
+			vim.api.nvim_err_writeln("Error getting icons. Cannot find nvim-web-devicons.")
+			return
+		end
+
+		local f = io.open(default_config.cache.path_cache_devicons, "w")
+
+		if f == nil then
+			vim.api.nvim_err_writeln("Error opening file: " .. default_config.cache.path_cache_devicons)
+			return
+		end
+
+		f:write(vim.json.encode(devicons))
+		f:close()
+	end)
+
 	default_config = vim.tbl_deep_extend("force", default_config, opts)
 
 	if default_config.autoreload then
@@ -43,6 +63,20 @@ function M.setup(opts)
 			group = vim.api.nvim_create_augroup("custom_devicons_on_colorscheme", { clear = true }),
 			callback = function()
 				local colors = {}
+
+				local f = io.open(default_config.cache.path_cache_devicons, "r")
+				if f == nil then
+					vim.api.nvim_err_writeln("Error opening file: " .. default_config.cache.path_cache_devicons)
+					return
+				end
+
+				local devicons = vim.json.decode(f:read("*a"))
+				f:close()
+
+				ok, _ = pcall(require("nvim-web-devicons").set_icon, devicons)
+				if not ok then
+					vim.api.nvim_err_writeln("Error setting icons.")
+				end
 
 				colors = custom_hl.get_custom_colors()
 
@@ -140,8 +174,9 @@ function M.apply(colors, bypass_cache)
 	cache, use_cache = prepare_cache(hash_colors, bypass_cache)
 	devicons = filter_devicons(devicons)
 
+	local converted_colors = vim.deepcopy(colors)
 	if not use_cache then
-		colors = convert_colors_table_to_lab(colors)
+		converted_colors = convert_colors_table_to_lab(colors)
 	end
 
 	for key_icon, icon_object in pairs(devicons) do
@@ -155,7 +190,7 @@ function M.apply(colors, bypass_cache)
 			else
 				nearest_color = colorspace.match_color(
 					default_icon_color,
-					colors,
+					converted_colors,
 					default_config.factors,
 					default_config.precise_search
 				)
