@@ -3,6 +3,7 @@ local M = {}
 local cache_utils = require("tiny-devicons-auto-colors.cache")
 local lab_utils = require("tiny-devicons-auto-colors.lab_utils")
 local utils = require("tiny-devicons-auto-colors.color_utils")
+local custom_hl = require("tiny-devicons-auto-colors.custom_hl")
 
 local default_config = {
 	colors = {},
@@ -27,8 +28,6 @@ local default_config = {
 }
 
 function M.setup(opts)
-	local custom_hl = require("tiny-devicons-auto-colors.custom_hl")
-
 	if opts == nil then
 		opts = {}
 	end
@@ -218,6 +217,10 @@ function M.apply(colors, bypass_cache)
 end
 
 function M.apply_no_cache(colors)
+	if colors == nil then
+		colors = custom_hl.get_custom_colors()
+	end
+
 	M.apply(colors, true)
 end
 
