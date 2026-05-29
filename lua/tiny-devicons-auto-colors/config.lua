@@ -122,9 +122,11 @@ local function filter_devicons(devicons)
 			default_config.ignore[ignore_key] = ignore_value:lower()
 		end
 
-		filtered_devicons = vim.tbl_filter(function(icon)
-			return not vim.tbl_contains(default_config.ignore, icon.name:lower())
-		end, devicons)
+		for key, icon in pairs(devicons) do
+			if not vim.tbl_contains(default_config.ignore, icon.name:lower()) then
+				filtered_devicons[key] = icon
+			end
+		end
 
 		return filtered_devicons
 	end
